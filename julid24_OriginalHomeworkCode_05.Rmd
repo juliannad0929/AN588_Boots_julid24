@@ -12,14 +12,45 @@ output:
 > Using bootstrapping, we can estimate standard errors and CIs around regression parameters, such as β coefficients.
 
 ## Problem 1
-Using the “KamilarAndCooperData.csv” dataset, run a linear regression looking at log(HomeRange_km2) in relation to log(Body_mass_female_mean) and report your β coeffiecients (slope and intercept).
+> Using the “KamilarAndCooperData.csv” dataset, run a linear regression looking at log(HomeRange_km2) in relation to log(Body_mass_female_mean) and report your β coeffiecients (slope and intercept).
+
+```{r}
+library(curl)
+data <- curl("https://raw.githubusercontent.com/fuzzyatelin/fuzzyatelin.github.io/master/AN588_Fall23/KamilarAndCooperData.csv")
+kc <- read.csv(data, header = TRUE, stringsAsFactors = FALSE)
+attach(kc)
+```
+
+```{r}
+# Fit the model
+# x = log(HomeRange_km2)
+# y = log(Body_mass_female_mean)
+kc_model <- lm(log(Body_mass_female_mean)~log(HomeRange_km2))
+summary(kc_model)
+```
+### Beta Coefficients
+> Slope: 0.50638, Intercept: 8.48616
+
+### Plotting the Model
+```{r}
+# Plotting the model
+library(ggplot2)
+ggplot(kc, aes(log(HomeRange_km2), log(Body_mass_female_mean))) +
+  geom_point() +
+  geom_smooth(method = 'lm', formula=y~x, color = 'purple') +
+  labs(
+    title = 'Linear Regression',
+    x = 'log(HomeRange_km2)',
+    y = 'log(Body_mass_female_mean)')
+```
+
+## Problem 2
+>Then, use bootstrapping to sample from your data 1000 times with replacement, each time fitting the same model and calculating the same coefficients. This generates a sampling distribution for each β coefficient.
 
 ```{r}
 
 ```
 
-## Problem 2
-Then, use bootstrapping to sample from your data 1000 times with replacement, each time fitting the same model and calculating the same coefficients. This generates a sampling distribution for each β coefficient.
 
 > Estimate the standard error for each of your β coefficients as the standard deviation of the sampling distribution from your bootstrap and determine the 95% CI for each of your β coefficients based on the appropriate quantiles from your sampling distribution.
 
