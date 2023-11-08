@@ -41,11 +41,20 @@ reg_boot <- function(data, idx) {
 } 
 
 b <- boot(data, reg_boot, 1000)
-print(b$t)
+b_coefs <- b$t
+print(b_coefs)
 # not entirely sure if this is right but I tried so many other things that didn't work and this kinda looks like it worked.
 ```
 
 > Estimate the standard error for each of your β coefficients as the standard deviation of the sampling distribution from your bootstrap and determine the 95% CI for each of your β coefficients based on the appropriate quantiles from your sampling distribution.
+
+```{r}
+se_b <- apply(b_coefs, 2, sd)
+print(se_b)
+
+ci_b <- boot.ci(b, index=1, type="perc")
+print(ci_b)
+```
 
 > How does the former compare to the SE estimated from your entire dataset using the formula for standard error implemented in lm()?
 
