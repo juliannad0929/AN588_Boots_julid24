@@ -25,15 +25,14 @@ attach(kc)
 # Fit the model
 # x = log(HomeRange_km2)
 # y = log(Body_mass_female_mean)
-kc_model <- lm(log(Body_mass_female_mean)~log(HomeRange_km2))
-summary(kc_model)
+kc_fit <- lm(log(Body_mass_female_mean)~log(HomeRange_km2))
+coef(kc_fit)
 ```
 ### Beta Coefficients
 > Slope: 0.50638, Intercept: 8.48616
 
 ### Plotting the Model
 ```{r}
-# Plotting the model
 library(ggplot2)
 ggplot(kc, aes(log(HomeRange_km2), log(Body_mass_female_mean))) +
   geom_point() +
@@ -48,7 +47,10 @@ ggplot(kc, aes(log(HomeRange_km2), log(Body_mass_female_mean))) +
 >Then, use bootstrapping to sample from your data 1000 times with replacement, each time fitting the same model and calculating the same coefficients. This generates a sampling distribution for each β coefficient.
 
 ```{r}
+# Bootstrapping for β coefficients
 
+set <- NULL #dummy variable
+n <- 
 ```
 
 
@@ -57,3 +59,11 @@ ggplot(kc, aes(log(HomeRange_km2), log(Body_mass_female_mean))) +
 > How does the former compare to the SE estimated from your entire dataset using the formula for standard error implemented in lm()?
 
 > How does the latter compare to the 95% CI estimated from your entire dataset?
+
+
+## Extra Credit
+> Write a FUNCTION that takes as its arguments a dataframe, “d”, a linear model, “m” (as a character string, e.g., “logHR~logBM”), a user-defined confidence interval level, “conf.level” (with default = 0.95), and a number of bootstrap replicates, “n” (with default = 1000). Your function should return a dataframe that includes: beta coefficient names; beta coefficients, standard errors, and upper and lower CI limits for the linear model based on your entire dataset; and mean beta coefficient estimates, SEs, and CI limits for those coefficients based on your bootstrap.
+
+
+## Extra Extra Credit
+> Graph each beta value from the linear model and its corresponding mean value, lower CI and upper CI from a bootstrap as a function of number of bootstraps from 10 to 200 by 10s. HINT: the beta value from the linear model will be the same for all bootstraps and the mean beta value may not differ that much!
