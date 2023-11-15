@@ -23,6 +23,7 @@ attach(kc)
 # x = log(Body_mass_female_mean)
 # y = log(HomeRange_km2)
 kc_fit <- lm(log(HomeRange_km2)~log(Body_mass_female_mean))
+summary(kc_fit)
 coef(kc_fit)
 ```
 
@@ -52,14 +53,16 @@ print(b_coefs)
 library(boot)
 se_b <- apply(b_coefs, 2, sd)
 print(se_b)
+```
 
+```{r}
 ci_b <- boot.ci(b, index=1, type="perc")
 print(ci_b)
 ```
 
 > How does the former compare to the SE estimated from your entire dataset using the formula for standard error implemented in lm()?
 
-> Answer: They are pretty close in number. The SE from the entire dataset is slightly greater than the SE from the bootstrap data.
+> Answer: They SEs are pretty close in number. The SE from the entire dataset is slightly greater than the SE from the bootstrap data.
 
 ```{r}
 # SE estimated from entire dataset
@@ -108,13 +111,13 @@ bootstrap_results <- matrix(NA, nrow = n, ncol = length(beta_coef))
   
 # Perform bootstrap
   for (i in 1:n) {
-    # Sample with replacement from the original data
+# Sample with replacement from the original data
     sampled_data <- d[sample(nrow(d), replace = TRUE), ]
     
-    # Fit a linear model on sample data input by user
+# Fit a linear model on sample data input by user
     sampled_model <- lm(string, data = sampled_data)
     
-    # Store the beta coefficients for the bootstrap samples
+# Store the beta coefficients for the bootstrap samples
     bootstrap_results[i, ] <- coef(sampled_model)
   }
   
@@ -123,7 +126,7 @@ bootstrap_results <- matrix(NA, nrow = n, ncol = length(beta_coef))
   lower_ci <- apply(bootstrap_results, 2, function(x) quantile(x, alpha))
   upper_ci <- apply(bootstrap_results, 2, function(x) quantile(x, 1 - alpha))
   
-# Store the results
+# List Results
   result_df <- data.frame(
     Coefficient = names(beta_coef),
     Estimate = beta_coef,
