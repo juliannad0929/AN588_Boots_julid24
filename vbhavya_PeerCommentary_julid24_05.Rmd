@@ -1,0 +1,156 @@
+---
+title: "vbhavya_PeerCommentary_julid24_05"
+author: "Bhavya Deepti Vadavalli"
+date: "`r Sys.Date()`"
+output: 
+  html_document:
+    theme: cerulean
+    toc: yes
+    toc_float: true
+---
+```{r}
+library(curl)
+data <- curl("https://raw.githubusercontent.com/fuzzyatelin/fuzzyatelin.github.io/master/AN588_Fall23/KamilarAndCooperData.csv")
+kc <- read.csv(data, header = TRUE, stringsAsFactors = FALSE)
+attach(kc)
+```
+
+# Problem 1 Beta Coefficients
+> Using the “KamilarAndCooperData.csv” dataset, run a linear regression looking at log(HomeRange_km2) in relation to log(Body_mass_female_mean) and report your β coeffiecients (slope and intercept).
+
+```{r}
+# Fit the model
+# x = log(Body_mass_female_mean)
+# y = log(HomeRange_km2)
+kc_fit <- lm(log(HomeRange_km2)~log(Body_mass_female_mean))
+summary(kc_fit)
+coef(kc_fit)
+```
+
+# Problem 2 Bootstrapping
+>Then, use bootstrapping to sample from your data 1000 times with replacement, each time fitting the same model and calculating the same coefficients. This generates a sampling distribution for each β coefficient.
+
+```{r}
+# Bootstrapping for β coefficients
+# reference source: https://www.statmethods.net/advstats/bootstrapping.html 
+library(boot)
+data <- data.frame(kc)
+
+reg_boot <- function(data, idx) {
+  fit <- lm(log(HomeRange_km2)~log(Body_mass_female_mean), data=data[idx, ])
+  coef(fit)
+} 
+
+b <- boot(data, reg_boot, 1000)
+b_coefs <- b$t
+print(b_coefs)
+# not entirely sure if this is right but I tried so many other things that didn't work and this kinda looks like it worked.
+
+#vbhavya: Hey. I'm glad you could figure it out. Maybe you could explain the function a bit. I didn't do it this way so I guess I just think it could help anyone else looking at the code understand it better.  
+```
+
+> Estimate the standard error for each of your β coefficients as the standard deviation of the sampling distribution from your bootstrap and determine the 95% CI for each of your β coefficients based on the appropriate quantiles from your sampling distribution.
+
+```{r}
+library(boot)
+se_b <- apply(b_coefs, 2, sd)
+print(se_b)
+```
+
+```{r}
+ci_b <- boot.ci(b, index=1, type="perc")
+print(ci_b)
+```
+
+> How does the former compare to the SE estimated from your entire dataset using the formula for standard error implemented in lm()?
+
+> Answer: They SEs are pretty close in number. The SE from the entire dataset is slightly greater than the SE from the bootstrap data.
+
+```{r}
+# SE estimated from entire dataset
+se_data <- summary(kc_fit)
+se_data
+
+# SE from bootstrap data
+se_b <- apply(b_coefs, 2, sd)
+print(se_b)
+```
+
+> How does the latter compare to the 95% CI estimated from your entire dataset?
+
+> Answer: They are pretty close in number.
+
+```{r}
+# CI from entire dataset
+CI_data <- confint(kc_fit)
+CI_data
+
+# CI from bootstrap data
+ci_b <- boot.ci(b, index=1, type="perc")
+print(ci_b)
+```
+
+
+# Extra Credit
+> Write a FUNCTION that takes as its arguments a dataframe, “d”, a linear model, “m” (as a character string, e.g., “logHR~logBM”), a user-defined confidence interval level, “conf.level” (with default = 0.95), and a number of bootstrap replicates, “n” (with default = 1000). Your function should return a dataframe that includes: beta coefficient names; beta coefficients, standard errors, and upper and lower CI limits for the linear model based on your entire dataset; and mean beta coefficient estimates, SEs, and CI limits for those coefficients based on your bootstrap.
+
+```{r}
+# Create empty function
+bootstrap_lm <- function(d, m, conf.level = 0.95, n = 1000) {
+
+# "m" as a character string e.g., "logHR~logBM"
+string <- as.formula(m)
+  
+# Fit the linear model 
+model <- lm(string, data = d)
+  
+# Beta coefficients and standard errors
+beta_coef <- coef(model)
+se_coef <- summary(model)$coef[, "Std. Error"]
+  
+# Create an empty matrix to store bootstrap results
+bootstrap_results <- matrix(NA, nrow = n, ncol = length(beta_coef))
+  
+# Perform bootstrap
+  for (i in 1:n) {
+# Sample with replacement from the original data
+    sampled_data <- d[sample(nrow(d), replace = TRUE), ]
+    
+# Fit a linear model on sample data input by user
+    sampled_model <- lm(string, data = sampled_data)
+    
+# Store the beta coefficients for the bootstrap samples
+    bootstrap_results[i, ] <- coef(sampled_model)
+  }
+  
+# Calculate confidence intervals
+  alpha <- (1 - conf.level) / 2
+  lower_ci <- apply(bootstrap_results, 2, function(x) quantile(x, alpha))
+  upper_ci <- apply(bootstrap_results, 2, function(x) quantile(x, 1 - alpha))
+  
+# List Results
+  result_df <- data.frame(
+    Coefficient = names(beta_coef),
+    Estimate = beta_coef,
+    SE = se_coef,
+    Lower_CI = lower_ci,
+    Upper_CI = upper_ci
+  )
+  
+  return(result_df)
+}
+
+#vbhavya: It's really cool that you did the extra-credit. I really liked how you broke the steps up and it was really easy to follow!
+```
+
+```{r}
+# Test
+bootstrap_lm(kc, log(HomeRange_km2)~log(Body_mass_female_mean), conf.level=0.95, n=1000)
+```
+
+# Challenges
+> I didn't find this hw too challenging because it combined a lot of concepts we've learned in previous modules, but applied it to CIs and beta coefficients.
+> The extra credit function was pretty challenging to make, but with the help of the boot package & this website: https://cran.r-project.org/package=boot. 
+
+# Peer Comments 
+>You did a great job! I didn't have much to comment, just that you could probably explain your bootstrapping a little bit. 
